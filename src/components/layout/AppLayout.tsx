@@ -181,7 +181,11 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
               </p>
               <p className="text-xs text-sidebar-muted truncate">{currentUser.role}</p>
             </div>
-            <button className="text-sidebar-muted hover:text-sidebar-foreground transition-colors">
+            <button 
+              onClick={() => window.location.href = '/login'}
+              className="text-sidebar-muted hover:text-sidebar-foreground transition-colors"
+              title="Kijelentkezés"
+            >
               <LogOut className="w-5 h-5" />
             </button>
           </div>

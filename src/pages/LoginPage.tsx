@@ -135,6 +135,7 @@ export default function LoginPage() {
               <li>Flottam.: toth.gabor@ontime.hu</li>
               <li>Megrend.: kovacs.laszlo@auchan.hu</li>
             </ul>
+            <p className="mt-2 text-foreground">Jelszó: <span className="font-mono font-semibold">OnTime2.0</span></p>
           </div>
         </div>
       </div>

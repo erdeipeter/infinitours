@@ -20,10 +20,20 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
+import { NewScheduleModal } from '@/components/schedules/NewScheduleModal';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function SchedulesPage() {
+  const { currentUser } = useAuth();
   const [search, setSearch] = useState('');
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const [isNewScheduleModalOpen, setIsNewScheduleModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const canCreateSchedule = currentUser?.role === 'Admin' || 
+    currentUser?.role === 'Flottamenedzser' || 
+    currentUser?.role === 'Sportbusz Iroda';
 
   const getLineName = (lineId: string) => lines.find((l) => l.id === lineId)?.name || '-';
   const getFuelBracket = (bracketId?: string) => fuelBrackets.find((fb) => fb.id === bracketId);
@@ -105,11 +115,31 @@ export default function SchedulesPage() {
         title="Menetrendek"
         description="Járatok menetrendjének kezelése és verziózása"
         actions={
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Új menetrend
-          </Button>
+          canCreateSchedule ? (
+            <Button onClick={() => setIsNewScheduleModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Új menetrend
+            </Button>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button disabled className="opacity-50 cursor-not-allowed">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Új menetrend
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Ehhez a funkcióhoz nincs jogosultságod.</p>
+              </TooltipContent>
+            </Tooltip>
+          )
         }
+      />
+
+      <NewScheduleModal
+        open={isNewScheduleModalOpen}
+        onOpenChange={setIsNewScheduleModalOpen}
+        onScheduleCreated={() => setRefreshKey(prev => prev + 1)}
       />
 
       <div className="page-content space-y-4">

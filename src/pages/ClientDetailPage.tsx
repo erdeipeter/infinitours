@@ -1,17 +1,25 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { clients, vehicles, vehicleAssignments, fuelBrackets } from '@/data/mockData';
+import { Client } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Edit, Building2, Palette, Globe, FileText, Fuel, Calendar, Bus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { useAuth } from '@/contexts/AuthContext';
+import { EditClientModal } from '@/components/clients/EditClientModal';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function ClientDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [clientData, setClientData] = useState<Client | null>(null);
   
-  const client = clients.find(c => c.id === id);
+  const client = clientData || clients.find(c => c.id === id);
   
   if (!client) {
     return (
@@ -21,8 +29,18 @@ export default function ClientDetailPage() {
     );
   }
 
+  const canEdit = currentUser?.role === 'Admin';
   const assignedVehicles = vehicles.filter(v => v.assigned_clients.includes(client.id));
   const fuelBracket = fuelBrackets.find(fb => fb.id === client.fuel_bracket_id);
+
+  const handleSaveClient = (updatedClient: Client) => {
+    // Update in mock data
+    const index = clients.findIndex(c => c.id === updatedClient.id);
+    if (index !== -1) {
+      clients[index] = updatedClient;
+    }
+    setClientData(updatedClient);
+  };
 
   return (
     <div className="animate-fade-in">
@@ -35,12 +53,33 @@ export default function ClientDetailPage() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Vissza
             </Button>
-            <Button>
-              <Edit className="w-4 h-4 mr-2" />
-              Szerkesztés
-            </Button>
+            {canEdit ? (
+              <Button onClick={() => setIsEditModalOpen(true)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Szerkesztés
+              </Button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button disabled className="opacity-50 cursor-not-allowed">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Szerkesztés
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Ehhez a funkcióhoz nincs jogosultságod.</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
         }
+      />
+
+      <EditClientModal
+        client={client}
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        onSave={handleSaveClient}
       />
 
       <div className="page-content space-y-6">

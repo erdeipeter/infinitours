@@ -32,6 +32,8 @@ const categoryLabels: Record<VehicleCategory, string> = {
   midibusz: 'Midibusz',
   turista: 'Turistabusz',
   alacsonypadlós: 'Alacsonypadlós',
+  szerviz: 'Szerviz gépkocsi',
+  szemely: 'Személygépkocsi',
 };
 
 export default function VehiclesPage() {

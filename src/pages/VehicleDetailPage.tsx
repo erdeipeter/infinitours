@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { vehicles, clients, vehicleAssignments } from '@/data/mockData';
+import { Vehicle } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -8,6 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Edit, Bus, Gauge, Calendar, Building2, History, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useAuth } from '@/contexts/AuthContext';
+import { EditVehicleModal } from '@/components/vehicles/EditVehicleModal';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const categoryLabels: Record<string, string> = {
   mikro: 'Mikrobusz',
@@ -20,8 +25,11 @@ const categoryLabels: Record<string, string> = {
 export default function VehicleDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
 
-  const vehicle = vehicles.find((v) => v.id === id);
+  const vehicle = vehicleData || vehicles.find((v) => v.id === id);
 
   if (!vehicle) {
     return (
@@ -30,6 +38,16 @@ export default function VehicleDetailPage() {
       </div>
     );
   }
+
+  const canEdit = currentUser?.role === 'Admin' || currentUser?.role === 'Flottamenedzser';
+
+  const handleSaveVehicle = (updatedVehicle: Vehicle) => {
+    const index = vehicles.findIndex(v => v.id === updatedVehicle.id);
+    if (index !== -1) {
+      vehicles[index] = updatedVehicle;
+    }
+    setVehicleData(updatedVehicle);
+  };
 
   const assignedClients = vehicle.assigned_clients
     .map((clientId) => clients.find((c) => c.id === clientId))
@@ -49,12 +67,33 @@ export default function VehicleDetailPage() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Vissza
             </Button>
-            <Button>
-              <Edit className="w-4 h-4 mr-2" />
-              Szerkesztés
-            </Button>
+            {canEdit ? (
+              <Button onClick={() => setIsEditModalOpen(true)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Szerkesztés
+              </Button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button disabled className="opacity-50 cursor-not-allowed">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Szerkesztés
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Ehhez a funkcióhoz nincs jogosultságod.</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
         }
+      />
+
+      <EditVehicleModal
+        vehicle={vehicle}
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        onSave={handleSaveVehicle}
       />
 
       <div className="page-content">

@@ -22,11 +22,19 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { NewDriverModal } from '@/components/drivers/NewDriverModal';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function DriversPage() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [search, setSearch] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+  const [isNewDriverModalOpen, setIsNewDriverModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const canCreateDriver = currentUser?.role === 'Admin' || currentUser?.role === 'Flottamenedzser';
 
   const filteredDrivers = drivers.filter(
     (driver) =>
@@ -125,11 +133,31 @@ export default function DriversPage() {
         title="Sofőrök"
         description="Járművezetők és teljesítményük kezelése"
         actions={
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Új sofőr
-          </Button>
+          canCreateDriver ? (
+            <Button onClick={() => setIsNewDriverModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Új sofőr
+            </Button>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button disabled className="opacity-50 cursor-not-allowed">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Új sofőr
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Ehhez a funkcióhoz nincs jogosultságod.</p>
+              </TooltipContent>
+            </Tooltip>
+          )
         }
+      />
+
+      <NewDriverModal
+        open={isNewDriverModalOpen}
+        onOpenChange={setIsNewDriverModalOpen}
+        onDriverCreated={() => setRefreshKey(prev => prev + 1)}
       />
 
       <div className="page-content space-y-4">

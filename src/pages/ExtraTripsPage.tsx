@@ -41,6 +41,8 @@ const categoryLabels: Record<VehicleCategory, string> = {
   midibusz: 'Midibusz (29-33 fő)',
   turista: 'Turistabusz (49-55 fő)',
   alacsonypadlós: 'Alacsonypadlós (39 fő)',
+  szerviz: 'Szerviz gépkocsi',
+  szemely: 'Személygépkocsi',
 };
 
 export default function ExtraTripsPage() {

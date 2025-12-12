@@ -19,7 +19,7 @@ export interface Client {
   documents_count: number;
 }
 
-export type VehicleCategory = 'mikro' | 'minibusz' | 'midibusz' | 'turista' | 'alacsonypadlós';
+export type VehicleCategory = 'mikro' | 'minibusz' | 'midibusz' | 'turista' | 'alacsonypadlós' | 'szerviz' | 'szemely';
 export type VehicleStatus = 'aktív' | 'tartalék' | 'inaktív';
 
 export interface Vehicle {

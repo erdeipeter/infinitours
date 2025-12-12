@@ -14,14 +14,12 @@ import {
   User,
   ChevronDown,
   ChevronRight,
-  MapPin,
-  RefreshCw,
-  CalendarClock,
   LogOut,
   Menu,
   X,
+  FileText,
 } from 'lucide-react';
-import { currentUser } from '@/data/mockData';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavItem {
   label: string;
@@ -30,8 +28,9 @@ interface NavItem {
   children?: { label: string; path: string }[];
 }
 
-const navigation: NavItem[] = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
+// Full navigation for internal users
+const internalNavigation: NavItem[] = [
+  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { label: 'Megrendelők', icon: Building2, path: '/clients' },
   { label: 'Járművek', icon: Bus, path: '/vehicles' },
   { label: 'Sofőrök', icon: Users, path: '/drivers' },
@@ -60,6 +59,15 @@ const navigation: NavItem[] = [
   { label: 'Profilom', icon: User, path: '/profile' },
 ];
 
+// Limited navigation for Megrendelő users
+const clientNavigation: NavItem[] = [
+  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+  { label: 'Járatok', icon: Route, path: '/trips/client' },
+  { label: 'Eseti megrendelések', icon: Calendar, path: '/trips/eseti' },
+  { label: 'Teljesítési igazolások', icon: FileText, path: '/reports/external' },
+  { label: 'Profilom', icon: User, path: '/profile' },
+];
+
 interface AppSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
@@ -67,7 +75,11 @@ interface AppSidebarProps {
 
 export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
   const location = useLocation();
+  const { currentUser, isClient, logout } = useAuth();
   const [expandedItems, setExpandedItems] = useState<string[]>(['Járattervezés', 'Riportok']);
+
+  // Select navigation based on user role
+  const navigation = isClient ? clientNavigation : internalNavigation;
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) =>
@@ -78,6 +90,11 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
   const isActive = (path: string) => location.pathname === path;
   const isChildActive = (children?: { label: string; path: string }[]) =>
     children?.some((child) => location.pathname === child.path);
+
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/login';
+  };
 
   return (
     <>
@@ -177,12 +194,12 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-sidebar-foreground truncate">
-                {currentUser.name}
+                {currentUser?.name || 'Vendég'}
               </p>
-              <p className="text-xs text-sidebar-muted truncate">{currentUser.role}</p>
+              <p className="text-xs text-sidebar-muted truncate">{currentUser?.role || ''}</p>
             </div>
             <button 
-              onClick={() => window.location.href = '/login'}
+              onClick={handleLogout}
               className="text-sidebar-muted hover:text-sidebar-foreground transition-colors"
               title="Kijelentkezés"
             >

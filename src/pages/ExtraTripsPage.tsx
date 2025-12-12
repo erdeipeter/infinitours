@@ -33,7 +33,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { currentUser } from '@/data/mockData';
+import { useAuth } from '@/contexts/AuthContext';
 
 const categoryLabels: Record<VehicleCategory, string> = {
   mikro: 'Mikrobusz (8 fő)',
@@ -49,10 +49,15 @@ export default function ExtraTripsPage() {
   const [selectedTrip, setSelectedTrip] = useState<ExtraTrip | null>(null);
   const [finalizeTrip, setFinalizeTrip] = useState<ExtraTrip | null>(null);
 
-  const isClient = currentUser.role === 'Megrendelő';
-  const isOffice = currentUser.role === 'Sportbusz Iroda' || currentUser.role === 'Admin';
+  const { currentUser, isClient, clientId } = useAuth();
+  const isOffice = currentUser?.role === 'Sportbusz Iroda' || currentUser?.role === 'Admin';
 
-  const filteredTrips = extraTrips.filter(
+  // Filter by client_id for Megrendelő users
+  const clientFilteredTrips = isClient 
+    ? extraTrips.filter(trip => trip.client_id === clientId)
+    : extraTrips;
+
+  const filteredTrips = clientFilteredTrips.filter(
     (trip) =>
       trip.client_name.toLowerCase().includes(search.toLowerCase()) ||
       trip.start_stop_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -141,10 +146,12 @@ export default function ExtraTripsPage() {
                 Véglegesítés
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem>
-              <Edit className="w-4 h-4 mr-2" />
-              Szerkesztés
-            </DropdownMenuItem>
+            {!isClient && (
+              <DropdownMenuItem>
+                <Edit className="w-4 h-4 mr-2" />
+                Szerkesztés
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       ),

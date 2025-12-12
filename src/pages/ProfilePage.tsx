@@ -1,24 +1,29 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { currentUser } from '@/data/mockData';
+import { useAuth } from '@/contexts/AuthContext';
+import { clients } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Mail, Lock, LogOut, Save } from 'lucide-react';
+import { User, Lock, LogOut, Save, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const [name, setName] = useState(currentUser.name);
-  const [email, setEmail] = useState(currentUser.email);
+  const { currentUser, isClient, clientId, logout } = useAuth();
+  const [name, setName] = useState(currentUser?.name || '');
+  const [email, setEmail] = useState(currentUser?.email || '');
+
+  const clientName = clientId ? clients.find(c => c.id === clientId)?.name : undefined;
 
   const handleSave = () => {
     toast.success('Profil sikeresen mentve!');
   };
 
   const handleLogout = () => {
+    logout();
     toast.success('Sikeres kijelentkezés!');
     navigate('/login');
   };
@@ -39,12 +44,18 @@ export default function ProfilePage() {
             <div className="flex items-center gap-4 mb-6">
               <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                 <span className="text-2xl font-bold text-primary">
-                  {currentUser.name.split(' ').map((n) => n[0]).join('')}
+                  {currentUser?.name.split(' ').map((n) => n[0]).join('') || '?'}
                 </span>
               </div>
               <div>
-                <p className="font-semibold text-lg">{currentUser.name}</p>
-                <p className="text-muted-foreground">{currentUser.role}</p>
+                <p className="font-semibold text-lg">{currentUser?.name}</p>
+                <p className="text-muted-foreground">{currentUser?.role}</p>
+                {isClient && clientName && (
+                  <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
+                    <Building2 className="w-4 h-4" />
+                    <span>{clientName}</span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="space-y-2">

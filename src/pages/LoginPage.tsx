@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('kiss.andras@ontime.hu');
   const [password, setPassword] = useState('');
@@ -17,11 +19,24 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login
     setTimeout(() => {
+      // Check password
+      if (password !== 'OnTime2.0') {
+        setIsLoading(false);
+        toast.error('Hibás jelszó!');
+        return;
+      }
+
+      // Try to login
+      const success = login(email);
       setIsLoading(false);
-      toast.success('Sikeres bejelentkezés!');
-      navigate('/dashboard');
+
+      if (success) {
+        toast.success('Sikeres bejelentkezés!');
+        navigate('/dashboard');
+      } else {
+        toast.error('Hibás e-mail cím!');
+      }
     }, 1000);
   };
 

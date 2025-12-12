@@ -15,13 +15,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function ExternalReportsPage() {
   const [selectedMonth, setSelectedMonth] = useState('2024-12');
+  const { isClient, clientId, clientName } = useAuth();
 
-  const fixLines = lines.filter((l) => l.type === 'fix');
-  const korLines = lines.filter((l) => l.type === 'kör');
-  const esetiTrips = extraTrips.filter((t) => t.status === 'Véglegesítve');
+  // Filter by client_id for Megrendelő users
+  const clientFilteredLines = isClient 
+    ? lines.filter(l => l.client_id === clientId)
+    : lines;
+
+  const fixLines = clientFilteredLines.filter((l) => l.type === 'fix');
+  const korLines = clientFilteredLines.filter((l) => l.type === 'kör');
+  
+  const clientFilteredTrips = isClient
+    ? extraTrips.filter(t => t.client_id === clientId && t.status === 'Véglegesítve')
+    : extraTrips.filter((t) => t.status === 'Véglegesítve');
+
+  const esetiTrips = clientFilteredTrips;
 
   const handleDownload = () => {
     toast.success('Riport letöltése megkezdődött...');
@@ -30,16 +42,15 @@ export default function ExternalReportsPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title="Külső riportok"
-        description="Havi teljesítési riportok megrendelőknek"
+        title={isClient ? "Teljesítési igazolások" : "Külső riportok"}
+        description={isClient ? `Havi teljesítési igazolások - ${clientName}` : "Havi teljesítési riportok megrendelőknek"}
         actions={
           <Button onClick={handleDownload}>
             <Download className="w-4 h-4 mr-2" />
-            Letöltés (XLS)
+            {isClient ? "Havi telj. ig. letöltése (XLS)" : "Letöltés (XLS)"}
           </Button>
         }
       />
-
       <div className="page-content space-y-6">
         {/* Month Selector */}
         <Card>
@@ -47,7 +58,7 @@ export default function ExternalReportsPage() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-muted-foreground" />
-                <span className="font-medium">Időszak:</span>
+                <span className="font-medium">{isClient ? "Hónap kiválasztása:" : "Időszak:"}</span>
               </div>
               <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                 <SelectTrigger className="w-[180px]">

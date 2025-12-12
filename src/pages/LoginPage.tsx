@@ -21,7 +21,7 @@ export default function LoginPage() {
     setTimeout(() => {
       setIsLoading(false);
       toast.success('Sikeres bejelentkezés!');
-      navigate('/');
+      navigate('/dashboard');
     }, 1000);
   };
 

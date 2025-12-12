@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable, Column } from '@/components/ui/data-table';
@@ -22,6 +22,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { NewVehicleModal } from '@/components/vehicles/NewVehicleModal';
 
 const categoryLabels: Record<VehicleCategory, string> = {
   mikro: 'Mikrobusz',
@@ -33,9 +36,18 @@ const categoryLabels: Record<VehicleCategory, string> = {
 
 export default function VehiclesPage() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [isNewVehicleModalOpen, setIsNewVehicleModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const canCreateVehicle = currentUser?.role === 'Admin' || currentUser?.role === 'Flottamenedzser';
+
+  const handleVehicleCreated = useCallback(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, []);
 
   const filteredVehicles = vehicles.filter((vehicle) => {
     const matchesSearch = vehicle.plate.toLowerCase().includes(search.toLowerCase());
@@ -133,10 +145,24 @@ export default function VehiclesPage() {
         title="Járművek"
         description="Flotta és járműpark kezelése"
         actions={
-          <Button onClick={() => navigate('/vehicles/new')}>
-            <Plus className="w-4 h-4 mr-2" />
-            Új jármű
-          </Button>
+          canCreateVehicle ? (
+            <Button onClick={() => setIsNewVehicleModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Új jármű
+            </Button>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button disabled className="opacity-50 cursor-not-allowed">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Új jármű
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Ehhez a funkcióhoz nincs jogosultságod.</p>
+              </TooltipContent>
+            </Tooltip>
+          )
         }
       />
 
@@ -185,6 +211,12 @@ export default function VehiclesPage() {
           onRowClick={(vehicle) => navigate(`/vehicles/${vehicle.id}`)}
         />
       </div>
+
+      <NewVehicleModal
+        open={isNewVehicleModalOpen}
+        onOpenChange={setIsNewVehicleModalOpen}
+        onVehicleCreated={handleVehicleCreated}
+      />
     </div>
   );
 }

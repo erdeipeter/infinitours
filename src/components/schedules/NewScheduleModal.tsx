@@ -278,6 +278,34 @@ export function NewScheduleModal({ open, onOpenChange, onScheduleCreated }: NewS
                 </div>
               ))}
             </div>
+
+            <div className="flex gap-2 pt-2 border-t">
+              <Input
+                placeholder="Új megálló neve..."
+                value={newStopName}
+                onChange={(e) => setNewStopName(e.target.value)}
+                className="h-9 text-sm"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (!newStopName.trim()) return;
+                  addStopGlobal({
+                    id: `stop-${Date.now()}`,
+                    name: newStopName.trim(),
+                    lat: 47.5,
+                    lng: 19.0,
+                  });
+                  setNewStopName('');
+                  toast.success('Új megálló hozzáadva.');
+                }}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Új megálló
+              </Button>
+            </div>
           </div>
         </div>
         <DialogFooter>

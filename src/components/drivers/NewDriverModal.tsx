@@ -21,6 +21,7 @@ interface NewDriverModalProps {
 }
 
 export function NewDriverModal({ open, onOpenChange, onDriverCreated }: NewDriverModalProps) {
+  const { drivers, addDriver } = useData();
   const [formData, setFormData] = useState({
     name: '',
     chip_id: '',

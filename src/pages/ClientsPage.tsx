@@ -27,6 +27,10 @@ export default function ClientsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [clients, setClients] = useState<Client[]>(initialClients);
+  const [newName, setNewName] = useState('');
+  const [newSubdomain, setNewSubdomain] = useState('');
+  const [newColor, setNewColor] = useState('#2563eb');
 
   const filteredClients = clients.filter((client) =>
     client.name.toLowerCase().includes(search.toLowerCase()) ||

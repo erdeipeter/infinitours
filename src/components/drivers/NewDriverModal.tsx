@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Driver } from '@/types';
-import { drivers } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

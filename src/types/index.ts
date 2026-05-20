@@ -1,4 +1,11 @@
-export type UserRole = 'Admin' | 'Flottamenedzser' | 'Sportbusz Iroda' | 'Megrendelő';
+export type UserRole =
+  | 'Rendszeradmin'
+  | 'Műszakvezető'
+  | 'Járattervező'
+  | 'Diszpécser'
+  | 'Riportnéző'
+  | 'Sofőr'
+  | 'Megrendelő';
 
 export interface User {
   id: string;
@@ -19,7 +26,15 @@ export interface Client {
   documents_count: number;
 }
 
-export type VehicleCategory = 'mikro' | 'minibusz' | 'midibusz' | 'turista' | 'alacsonypadlós' | 'szerviz' | 'szemely';
+export type VehicleCategory =
+  | 'mikro'
+  | 'minibusz'
+  | 'midibusz'
+  | 'turista'
+  | 'alacsonypadlós'
+  | 'szerviz'
+  | 'szemely';
+
 export type VehicleStatus = 'aktív' | 'tartalék' | 'inaktív';
 
 export interface Vehicle {
@@ -33,6 +48,8 @@ export interface Vehicle {
   current_km: number;
   next_inspection?: string;
   assigned_clients: string[];
+  license_expiry?: string;
+  efos_active?: boolean;
 }
 
 export interface VehicleAssignment {
@@ -50,6 +67,9 @@ export interface Driver {
   chip_id: string;
   phone: string;
   accuracy_percent: number;
+  license_expiry?: string;
+  efos_registered?: boolean;
+  available?: boolean;
 }
 
 export type LineType = 'fix' | 'kör' | 'eseti';
@@ -87,6 +107,15 @@ export interface ScheduleStop {
   planned_time: string;
 }
 
+export type TripStatus =
+  | 'Igény beérkezett'
+  | 'Tervezés alatt'
+  | 'Visszaigazolva'
+  | 'Aktív'
+  | 'Teljesített'
+  | 'Elutasítva'
+  | 'Lemondva';
+
 export type ExtraTripStatus = 'Új' | 'Véglegesítésre vár' | 'Véglegesítve';
 
 export interface ExtraTrip {
@@ -101,11 +130,15 @@ export interface ExtraTrip {
   end_time?: string;
   passengers: number;
   vehicle_category: VehicleCategory;
-  status: ExtraTripStatus;
+  status: TripStatus;
   is_return: boolean;
   notes?: string;
   assigned_vehicle_id?: string;
   assigned_driver_id?: string;
+  is_recurring?: boolean;
+  recurrence_pattern?: string;
+  audit_log?: AuditLogEntry[];
+  conflicts?: Conflict[];
 }
 
 export interface TripAssignment {
@@ -149,37 +182,16 @@ export interface Report {
 
 export interface DashboardStats {
   activeTripsToday: number;
-  vehicleStatuses: {
-    active: number;
-    reserve: number;
-    inactive: number;
-  };
+  vehicleStatuses: { active: number; reserve: number; inactive: number };
   fleetUtilization: number;
-  recentChanges: {
-    id: string;
-    type: string;
-    description: string;
-    timestamp: string;
-  }[];
-  delays: {
-    id: string;
-    line: string;
-    delay_minutes: number;
-    location: string;
-  }[];
-  inspectionWarnings: {
-    vehicle_id: string;
-    plate: string;
-    due_date: string;
-  }[];
+  recentChanges: { id: string; type: string; description: string; timestamp: string }[];
+  delays: { id: string; line: string; delay_minutes: number; location: string }[];
+  inspectionWarnings: { vehicle_id: string; plate: string; due_date: string }[];
   newExtraRequests: number;
   pendingFinalization: number;
-  upcomingTrips: {
-    id: string;
-    line: string;
-    time: string;
-    status: string;
-  }[];
+  upcomingTrips: { id: string; line: string; time: string; status: string }[];
+  conflictCount: number;
+  pendingProposals: number;
 }
 
 export interface DriverPerformance {
@@ -188,4 +200,82 @@ export interface DriverPerformance {
   arrival_time: string;
   timing_status: 'early' | 'ontime' | 'late';
   score: number;
+}
+
+export type ConflictType =
+  | 'sofor_parhuzamos'
+  | 'sofor_aetr'
+  | 'sofor_jogositvany'
+  | 'sofor_efos'
+  | 'jarmű_parhuzamos'
+  | 'jarmű_kapacitas'
+  | 'utvonal_elteres';
+
+export type ConflictSeverity = 'blocker' | 'warning';
+
+export interface Conflict {
+  id: string;
+  trip_id: string;
+  type: ConflictType;
+  severity: ConflictSeverity;
+  description: string;
+  affected_entity: string;
+  detected_at: string;
+  resolved?: boolean;
+}
+
+export type ProposalStatus = 'javaslat' | 'jóváhagyott' | 'módosított' | 'elutasított';
+
+export interface SchedulerProposal {
+  id: string;
+  trip_id: string;
+  trip_name: string;
+  client_name: string;
+  start_time: string;
+  end_time: string;
+  suggested_vehicle_id: string;
+  suggested_driver_id: string;
+  status: ProposalStatus;
+  reason?: string;
+  created_at: string;
+  score: number;
+}
+
+export type AuditAction =
+  | 'létrehozva'
+  | 'státusz_változás'
+  | 'jármű_hozzárendelve'
+  | 'sofőr_hozzárendelve'
+  | 'módosítva'
+  | 'lemondva'
+  | 'elutasítva';
+
+export interface AuditLogEntry {
+  id: string;
+  trip_id: string;
+  action: AuditAction;
+  user_name: string;
+  user_role: UserRole;
+  timestamp: string;
+  old_value?: string;
+  new_value?: string;
+  reason?: string;
+}
+
+export type DeviationReason =
+  | 'forgalmi_akadaly'
+  | 'baleset'
+  | 'utasvaro'
+  | 'muszaki_hiba'
+  | 'egyeb';
+
+export interface DeviationReport {
+  id: string;
+  trip_id: string;
+  driver_id: string;
+  reason: DeviationReason;
+  description: string;
+  reported_at: string;
+  location?: string;
+  estimated_delay_minutes?: number;
 }

@@ -1,215 +1,175 @@
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/ui/stat-card';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { getDashboardStats, currentUser, vehicles, extraTrips } from '@/data/mockData';
+import { getDashboardStats, vehicles, extraTrips, conflicts, schedulerProposals } from '@/data/mockData';
 import {
-  Bus,
-  Route,
-  AlertTriangle,
-  Clock,
-  TrendingUp,
-  Calendar,
-  FileText,
-  Users,
-  CheckCircle2,
-  XCircle,
-  Wrench,
+  Bus, Route, AlertTriangle, Clock, TrendingUp, Cpu,
+  CheckCircle2, XCircle, Wrench, Radio, AlertCircle, RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function DashboardPage() {
-  const stats = getDashboardStats(currentUser.role);
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const stats = getDashboardStats(currentUser?.role ?? '');
+  const unresolvedConflicts = conflicts.filter(c => !c.resolved);
+  const blockers = unresolvedConflicts.filter(c => c.severity === 'blocker');
+  const pendingProposals = schedulerProposals.filter(p => p.status === 'javaslat');
 
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title={`Üdvözöljük, ${currentUser.name.split(' ')[0]}!`}
-        description={`${currentUser.role} - ${new Date().toLocaleDateString('hu-HU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`}
+        title={`Üdvözöljük, ${currentUser?.name?.split(' ')[0]}!`}
+        description={`${currentUser?.role} · ${new Date().toLocaleDateString('hu-HU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`}
       />
-
       <div className="page-content space-y-6">
-        {/* Main Stats */}
+
+        {/* Fő KPI-k */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Aktív járatok ma"
-            value={stats.activeTripsToday}
-            icon={Route}
-            trend={{ value: 12, label: 'vs tegnap', positive: true }}
-          />
-          <StatCard
-            title="Aktív járművek"
-            value={stats.vehicleStatuses.active}
-            icon={Bus}
-            iconClassName="bg-success/10 text-success"
-          />
-          <StatCard
-            title="Flottakihasználtság"
-            value={`${stats.fleetUtilization}%`}
-            icon={TrendingUp}
-            iconClassName="bg-accent/10 text-accent"
-          />
-          <StatCard
-            title="Késések ma"
-            value={stats.delays.length}
-            icon={AlertTriangle}
-            iconClassName="bg-warning/10 text-warning"
-          />
+          <StatCard title="Aktív járatok ma"     value={stats.activeTripsToday}        icon={Route}       trend={{ value: 8, label: 'vs tegnap', positive: true }} />
+          <StatCard title="Aktív járművek"       value={stats.vehicleStatuses.active}  icon={Bus}         iconClassName="bg-success/10 text-success" />
+          <StatCard title="Flottakihasználtság"  value={`${stats.fleetUtilization}%`}  icon={TrendingUp}  iconClassName="bg-accent/10 text-accent" />
+          <StatCard title="Késések ma"           value={stats.delays.length}           icon={AlertTriangle} iconClassName="bg-warning/10 text-warning" />
         </div>
 
+        {/* Alert sáv – ütközések és javaslatok */}
+        {(blockers.length > 0 || pendingProposals.length > 0) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {blockers.length > 0 && (
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 cursor-pointer hover:bg-red-100 transition-colors"
+                onClick={() => navigate('/dispatcher')}>
+                <AlertCircle className="w-8 h-8 text-red-600 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-semibold text-red-800">{blockers.length} blokkoló ütközés</p>
+                  <p className="text-sm text-red-600">Azonnali beavatkozás szükséges</p>
+                </div>
+                <Button size="sm" variant="destructive">Megtekintés</Button>
+              </div>
+            )}
+            {pendingProposals.length > 0 && (
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 cursor-pointer hover:bg-amber-100 transition-colors"
+                onClick={() => navigate('/scheduler')}>
+                <Cpu className="w-8 h-8 text-amber-600 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-semibold text-amber-800">{pendingProposals.length} beosztási javaslat vár</p>
+                  <p className="text-sm text-amber-600">Holnapi műszak ütemezőmotor javaslatai</p>
+                </div>
+                <Button size="sm" variant="outline" className="border-amber-300">Jóváhagyás</Button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Vehicle Status Distribution */}
-          <Card className="lg:col-span-1">
+          {/* Járműstátuszok */}
+          <Card>
             <CardHeader>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Bus className="w-5 h-5 text-primary" />
-                Járműstátuszok
+                <Bus className="w-5 h-5 text-primary" />Járműstátuszok
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-success" />
-                    <span className="text-sm">Aktív</span>
+              {[
+                { label: 'Aktív',    count: stats.vehicleStatuses.active,  icon: CheckCircle2, cls: 'text-success', barCls: '' },
+                { label: 'Tartalék', count: stats.vehicleStatuses.reserve, icon: Clock,        cls: 'text-warning', barCls: '[&>div]:bg-warning' },
+                { label: 'Inaktív',  count: stats.vehicleStatuses.inactive,icon: XCircle,      cls: 'text-muted-foreground', barCls: '[&>div]:bg-muted-foreground' },
+              ].map(s => (
+                <div key={s.label} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2"><s.icon className={`w-4 h-4 ${s.cls}`} /><span className="text-sm">{s.label}</span></div>
+                    <span className="font-semibold">{s.count}</span>
                   </div>
-                  <span className="font-semibold">{stats.vehicleStatuses.active}</span>
+                  <Progress value={(s.count / vehicles.length) * 100} className={`h-2 bg-muted ${s.barCls}`} />
                 </div>
-                <Progress value={(stats.vehicleStatuses.active / vehicles.length) * 100} className="h-2 bg-muted" />
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-warning" />
-                    <span className="text-sm">Tartalék</span>
-                  </div>
-                  <span className="font-semibold">{stats.vehicleStatuses.reserve}</span>
+              ))}
+              <div className="pt-2 border-t">
+                <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 p-2 rounded-lg">
+                  <Wrench className="w-4 h-4" />
+                  <span>{stats.inspectionWarnings.length} jármű közelgő műszaki vizsgával</span>
                 </div>
-                <Progress value={(stats.vehicleStatuses.reserve / vehicles.length) * 100} className="h-2 bg-muted [&>div]:bg-warning" />
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">Inaktív</span>
-                  </div>
-                  <span className="font-semibold">{stats.vehicleStatuses.inactive}</span>
-                </div>
-                <Progress value={(stats.vehicleStatuses.inactive / vehicles.length) * 100} className="h-2 bg-muted [&>div]:bg-muted-foreground" />
               </div>
             </CardContent>
           </Card>
 
-          {/* Recent Changes */}
+          {/* Közelgő járatok */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary" />
-                Legutóbbi módosítások
+                <Radio className="w-5 h-5 text-primary" />Közelgő járatok
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {stats.recentChanges.map((change) => (
-                  <div key={change.id} className="flex items-start gap-3 pb-4 border-b border-border last:border-0 last:pb-0">
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                      {change.type === 'schedule' && <Calendar className="w-4 h-4 text-primary" />}
-                      {change.type === 'vehicle' && <Bus className="w-4 h-4 text-warning" />}
-                      {change.type === 'trip' && <Route className="w-4 h-4 text-success" />}
-                      {change.type === 'driver' && <Users className="w-4 h-4 text-accent" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-foreground">{change.description}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{change.timestamp}</p>
-                    </div>
+            <CardContent className="space-y-2">
+              {stats.upcomingTrips.map(t => {
+                const statusCls =
+                  t.status === 'Visszaigazolva'   ? 'bg-blue-100 text-blue-800'  :
+                  t.status === 'Tervezés alatt'   ? 'bg-amber-100 text-amber-800':
+                  t.status === 'Igény beérkezett' ? 'bg-slate-100 text-slate-700':
+                  t.status === 'Aktív'            ? 'bg-green-100 text-green-800': '';
+                return (
+                  <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                    <div className="text-sm font-mono font-bold text-primary w-12 flex-shrink-0">{t.time}</div>
+                    <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{t.line}</p></div>
+                    <Badge className={`text-[10px] ${statusCls}`} variant="outline">{t.status}</Badge>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </CardContent>
           </Card>
         </div>
 
+        {/* Legutóbbi változások + Eseti igények */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Delays */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-warning" />
-                Aktuális késések
+                <RefreshCw className="w-5 h-5 text-primary" />Legutóbbi változások
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              {stats.delays.length === 0 ? (
-                <p className="text-muted-foreground text-sm text-center py-4">Nincs aktuális késés</p>
-              ) : (
-                <div className="space-y-3">
-                  {stats.delays.map((delay) => (
-                    <div key={delay.id} className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-warning/20">
-                      <div>
-                        <p className="font-medium text-sm">{delay.line}</p>
-                        <p className="text-xs text-muted-foreground">{delay.location}</p>
-                      </div>
-                      <span className="text-warning font-semibold">+{delay.delay_minutes} perc</span>
-                    </div>
-                  ))}
+            <CardContent className="space-y-3">
+              {stats.recentChanges.map(c => (
+                <div key={c.id} className="flex items-start gap-3 text-sm">
+                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                    c.type === 'conflict' ? 'bg-red-500' : c.type === 'schedule' ? 'bg-amber-500' : 'bg-primary'
+                  }`} />
+                  <div className="flex-1">
+                    <p>{c.description}</p>
+                    <p className="text-xs text-muted-foreground">{c.timestamp}</p>
+                  </div>
                 </div>
-              )}
+              ))}
             </CardContent>
           </Card>
 
-          {/* Inspection Warnings */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Wrench className="w-5 h-5 text-destructive" />
-                Műszaki vizsga figyelmeztetések
+                <Route className="w-5 h-5 text-primary" />Eseti igények összesítő
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              {stats.inspectionWarnings.length === 0 ? (
-                <p className="text-muted-foreground text-sm text-center py-4">Nincs közelgő műszaki vizsga</p>
-              ) : (
-                <div className="space-y-3">
-                  {stats.inspectionWarnings.map((warning) => (
-                    <div key={warning.vehicle_id} className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/20">
-                      <div className="flex items-center gap-3">
-                        <Bus className="w-5 h-5 text-destructive" />
-                        <span className="font-medium">{warning.plate}</span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">{warning.due_date}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <CardContent className="space-y-3">
+              {[
+                { label: 'Igény beérkezett', color: 'bg-slate-400' },
+                { label: 'Tervezés alatt',   color: 'bg-amber-400' },
+                { label: 'Visszaigazolva',   color: 'bg-blue-500'  },
+                { label: 'Aktív',            color: 'bg-green-500' },
+                { label: 'Teljesített',      color: 'bg-emerald-600' },
+              ].map(s => {
+                const count = extraTrips.filter(t => t.status === s.label).length;
+                return (
+                  <div key={s.label} className="flex items-center gap-3">
+                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${s.color}`} />
+                    <span className="text-sm flex-1">{s.label}</span>
+                    <span className="font-semibold">{count}</span>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
         </div>
-
-        {/* Extra Trip Requests */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Route className="w-5 h-5 text-primary" />
-              Eseti járat igények
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
-                <p className="text-3xl font-bold text-primary">{extraTrips.filter(t => t.status === 'Új').length}</p>
-                <p className="text-sm text-muted-foreground mt-1">Új igények</p>
-              </div>
-              <div className="p-4 rounded-xl bg-warning/5 border border-warning/20 text-center">
-                <p className="text-3xl font-bold text-warning">{extraTrips.filter(t => t.status === 'Véglegesítésre vár').length}</p>
-                <p className="text-sm text-muted-foreground mt-1">Véglegesítésre vár</p>
-              </div>
-              <div className="p-4 rounded-xl bg-success/5 border border-success/20 text-center">
-                <p className="text-3xl font-bold text-success">{extraTrips.filter(t => t.status === 'Véglegesítve').length}</p>
-                <p className="text-sm text-muted-foreground mt-1">Véglegesítve</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

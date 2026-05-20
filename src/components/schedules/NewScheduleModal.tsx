@@ -146,6 +146,37 @@ export function NewScheduleModal({ open, onOpenChange, onScheduleCreated }: NewS
                 </SelectContent>
               </Select>
               {errors.line_id && <p className="text-sm text-destructive">{errors.line_id}</p>}
+              <div className="flex gap-2 pt-1">
+                <Input
+                  placeholder="Új járat neve..."
+                  value={newLineName}
+                  onChange={(e) => setNewLineName(e.target.value)}
+                  className="h-9 text-sm"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (!newLineName.trim()) return;
+                    const id = `line-${Date.now()}`;
+                    addLine({
+                      id,
+                      client_id: '1',
+                      name: newLineName.trim(),
+                      type: 'fix',
+                      stops_count: 0,
+                      shifts_count: 0,
+                    });
+                    setFormData({ ...formData, line_id: id });
+                    setNewLineName('');
+                    toast.success('Új járat hozzáadva.');
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Új járat
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

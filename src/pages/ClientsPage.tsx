@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable, Column } from '@/components/ui/data-table';
-import { clients } from '@/data/mockData';
+import { clients as initialClients } from '@/data/mockData';
 import { Client } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,10 @@ export default function ClientsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [clients, setClients] = useState<Client[]>(initialClients);
+  const [newName, setNewName] = useState('');
+  const [newSubdomain, setNewSubdomain] = useState('');
+  const [newColor, setNewColor] = useState('#2563eb');
 
   const filteredClients = clients.filter((client) =>
     client.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -129,22 +133,50 @@ export default function ClientsPage() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
+                  if (!newName.trim() || !newSubdomain.trim()) {
+                    toast.error('Kérlek töltsd ki a kötelező mezőket!');
+                    return;
+                  }
+                  const newClient: Client = {
+                    id: `client-${Date.now()}`,
+                    name: newName.trim(),
+                    subdomain: newSubdomain.trim(),
+                    primary_color: newColor,
+                    documents_count: 0,
+                  } as Client;
+                  setClients((prev) => [newClient, ...prev]);
                   toast.success('Megrendelő sikeresen hozzáadva!');
+                  setNewName('');
+                  setNewSubdomain('');
+                  setNewColor('#2563eb');
                   setIsDialogOpen(false);
                 }}
                 className="space-y-4"
               >
                 <div className="space-y-2">
                   <Label>Cégnév</Label>
-                  <Input placeholder="pl. ABC Logisztika Kft." />
+                  <Input
+                    placeholder="pl. ABC Logisztika Kft."
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Aldomain</Label>
-                  <Input placeholder="pl. abc-logisztika" />
+                  <Input
+                    placeholder="pl. abc-logisztika"
+                    value={newSubdomain}
+                    onChange={(e) => setNewSubdomain(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Elsődleges szín</Label>
-                  <Input type="color" defaultValue="#2563eb" className="h-10 w-full" />
+                  <Input
+                    type="color"
+                    value={newColor}
+                    onChange={(e) => setNewColor(e.target.value)}
+                    className="h-10 w-full"
+                  />
                 </div>
                 <div className="flex justify-end gap-3">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>

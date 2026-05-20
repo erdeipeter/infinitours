@@ -106,8 +106,8 @@ export function NewScheduleModal({ open, onOpenChange, onScheduleCreated }: NewS
     // Store schedule stops in metadata
     (newSchedule as any).stops = scheduleStops.filter(s => s.stop_id && s.planned_time);
 
-    // Add to schedules array (mock persistence)
-    schedules.push(newSchedule);
+    // Add via global state
+    addSchedule(newSchedule);
     
     onScheduleCreated(newSchedule);
     toast.success('Menetrend létrehozva.');

@@ -38,6 +38,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
+      <AuthProvider>
+        <DataProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />

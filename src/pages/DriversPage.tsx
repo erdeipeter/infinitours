@@ -162,7 +162,7 @@ export default function DriversPage() {
       <NewDriverModal
         open={isNewDriverModalOpen}
         onOpenChange={setIsNewDriverModalOpen}
-        onDriverCreated={() => setRefreshKey(prev => prev + 1)}
+        onDriverCreated={() => {}}
       />
 
       <div className="page-content space-y-4">

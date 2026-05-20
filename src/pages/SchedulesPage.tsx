@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable, Column } from '@/components/ui/data-table';
-import { schedules, lines, fuelBrackets, stops } from '@/data/mockData';
+import { fuelBrackets, stops } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { Schedule } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,14 +27,18 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 export default function SchedulesPage() {
   const { currentUser } = useAuth();
+  const { schedules, lines } = useData();
   const [search, setSearch] = useState('');
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [isNewScheduleModalOpen, setIsNewScheduleModalOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  const canCreateSchedule = currentUser?.role === 'Admin' || 
-    currentUser?.role === 'Flottamenedzser' || 
-    currentUser?.role === 'Sportbusz Iroda';
+  const canCreateSchedule =
+    currentUser?.role === 'Admin' ||
+    currentUser?.role === 'Flottamenedzser' ||
+    currentUser?.role === 'Sportbusz Iroda' ||
+    currentUser?.role === 'Rendszeradmin' ||
+    currentUser?.role === 'Műszakvezető' ||
+    currentUser?.role === 'Járattervező';
 
   const getLineName = (lineId: string) => lines.find((l) => l.id === lineId)?.name || '-';
   const getFuelBracket = (bracketId?: string) => fuelBrackets.find((fb) => fb.id === bracketId);
@@ -139,7 +144,7 @@ export default function SchedulesPage() {
       <NewScheduleModal
         open={isNewScheduleModalOpen}
         onOpenChange={setIsNewScheduleModalOpen}
-        onScheduleCreated={() => setRefreshKey(prev => prev + 1)}
+        onScheduleCreated={() => {}}
       />
 
       <div className="page-content space-y-4">

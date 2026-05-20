@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable, Column } from '@/components/ui/data-table';
-import { drivers, getDriverPerformance } from '@/data/mockData';
+import { drivers as _unused, getDriverPerformance } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { Driver } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,12 +30,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 export default function DriversPage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const { drivers } = useData();
   const [search, setSearch] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [isNewDriverModalOpen, setIsNewDriverModalOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  const canCreateDriver = currentUser?.role === 'Admin' || currentUser?.role === 'Flottamenedzser';
+  const canCreateDriver =
+    currentUser?.role === 'Admin' ||
+    currentUser?.role === 'Flottamenedzser' ||
+    currentUser?.role === 'Rendszeradmin' ||
+    currentUser?.role === 'Műszakvezető';
 
   const filteredDrivers = drivers.filter(
     (driver) =>
@@ -157,7 +162,7 @@ export default function DriversPage() {
       <NewDriverModal
         open={isNewDriverModalOpen}
         onOpenChange={setIsNewDriverModalOpen}
-        onDriverCreated={() => setRefreshKey(prev => prev + 1)}
+        onDriverCreated={() => {}}
       />
 
       <div className="page-content space-y-4">

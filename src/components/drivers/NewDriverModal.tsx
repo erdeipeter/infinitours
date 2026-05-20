@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Driver } from '@/types';
-import { drivers } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +21,7 @@ interface NewDriverModalProps {
 }
 
 export function NewDriverModal({ open, onOpenChange, onDriverCreated }: NewDriverModalProps) {
+  const { drivers, addDriver } = useData();
   const [formData, setFormData] = useState({
     name: '',
     chip_id: '',
@@ -72,8 +73,8 @@ export function NewDriverModal({ open, onOpenChange, onDriverCreated }: NewDrive
     // Store notes in metadata if needed
     (newDriver as any).notes = formData.notes;
 
-    // Add to drivers array (mock persistence)
-    drivers.push(newDriver);
+    // Add via global state
+    addDriver(newDriver);
     
     onDriverCreated(newDriver);
     toast.success('Sofőr létrehozva.');

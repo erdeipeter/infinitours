@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable, Column } from '@/components/ui/data-table';
-import { vehicles, clients } from '@/data/mockData';
+import { clients } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { Vehicle, VehicleCategory } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,17 +40,19 @@ const categoryLabels: Record<VehicleCategory, string> = {
 export default function VehiclesPage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const { vehicles } = useData();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [isNewVehicleModalOpen, setIsNewVehicleModalOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  const canCreateVehicle = currentUser?.role === 'Admin' || currentUser?.role === 'Flottamenedzser';
+  const canCreateVehicle =
+    currentUser?.role === 'Admin' ||
+    currentUser?.role === 'Flottamenedzser' ||
+    currentUser?.role === 'Rendszeradmin' ||
+    currentUser?.role === 'Műszakvezető';
 
-  const handleVehicleCreated = useCallback(() => {
-    setRefreshKey((prev) => prev + 1);
-  }, []);
+  const handleVehicleCreated = useCallback(() => {}, []);
 
   const filteredVehicles = vehicles.filter((vehicle) => {
     const matchesSearch = vehicle.plate.toLowerCase().includes(search.toLowerCase());

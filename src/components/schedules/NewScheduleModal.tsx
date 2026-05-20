@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Schedule } from '@/types';
-import { schedules, lines, stops, fuelBrackets } from '@/data/mockData';
+import { fuelBrackets } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +35,9 @@ interface ScheduleStop {
 }
 
 export function NewScheduleModal({ open, onOpenChange, onScheduleCreated }: NewScheduleModalProps) {
+  const { lines, stops, addSchedule, addStop: addStopGlobal, addLine } = useData();
+  const [newStopName, setNewStopName] = useState('');
+  const [newLineName, setNewLineName] = useState('');
   const [formData, setFormData] = useState({
     line_id: '',
     valid_from: '',
@@ -102,8 +106,8 @@ export function NewScheduleModal({ open, onOpenChange, onScheduleCreated }: NewS
     // Store schedule stops in metadata
     (newSchedule as any).stops = scheduleStops.filter(s => s.stop_id && s.planned_time);
 
-    // Add to schedules array (mock persistence)
-    schedules.push(newSchedule);
+    // Add via global state
+    addSchedule(newSchedule);
     
     onScheduleCreated(newSchedule);
     toast.success('Menetrend létrehozva.');
@@ -142,6 +146,37 @@ export function NewScheduleModal({ open, onOpenChange, onScheduleCreated }: NewS
                 </SelectContent>
               </Select>
               {errors.line_id && <p className="text-sm text-destructive">{errors.line_id}</p>}
+              <div className="flex gap-2 pt-1">
+                <Input
+                  placeholder="Új járat neve..."
+                  value={newLineName}
+                  onChange={(e) => setNewLineName(e.target.value)}
+                  className="h-9 text-sm"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (!newLineName.trim()) return;
+                    const id = `line-${Date.now()}`;
+                    addLine({
+                      id,
+                      client_id: '1',
+                      name: newLineName.trim(),
+                      type: 'fix',
+                      stops_count: 0,
+                      shifts_count: 0,
+                    });
+                    setFormData({ ...formData, line_id: id });
+                    setNewLineName('');
+                    toast.success('Új járat hozzáadva.');
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Új járat
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -242,6 +277,34 @@ export function NewScheduleModal({ open, onOpenChange, onScheduleCreated }: NewS
                   </Button>
                 </div>
               ))}
+            </div>
+
+            <div className="flex gap-2 pt-2 border-t">
+              <Input
+                placeholder="Új megálló neve..."
+                value={newStopName}
+                onChange={(e) => setNewStopName(e.target.value)}
+                className="h-9 text-sm"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (!newStopName.trim()) return;
+                  addStopGlobal({
+                    id: `stop-${Date.now()}`,
+                    name: newStopName.trim(),
+                    lat: 47.5,
+                    lng: 19.0,
+                  });
+                  setNewStopName('');
+                  toast.success('Új megálló hozzáadva.');
+                }}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Új megálló
+              </Button>
             </div>
           </div>
         </div>

@@ -73,8 +73,8 @@ export function NewDriverModal({ open, onOpenChange, onDriverCreated }: NewDrive
     // Store notes in metadata if needed
     (newDriver as any).notes = formData.notes;
 
-    // Add to drivers array (mock persistence)
-    drivers.push(newDriver);
+    // Add via global state
+    addDriver(newDriver);
     
     onDriverCreated(newDriver);
     toast.success('Sofőr létrehozva.');

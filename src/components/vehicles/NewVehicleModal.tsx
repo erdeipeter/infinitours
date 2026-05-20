@@ -134,8 +134,9 @@ export function NewVehicleModal({ open, onOpenChange, onVehicleCreated }: NewVeh
       assigned_clients: data.assigned_clients,
     };
 
-    // Add to mock data array
-    vehicles.push(newVehicle);
+    // Add via global state
+    addVehicle(newVehicle);
+
 
     setIsSubmitting(false);
     toast.success('Jármű sikeresen létrehozva.');

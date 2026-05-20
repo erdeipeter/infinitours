@@ -1,4 +1,7 @@
 export type UserRole =
+  | 'Admin'
+  | 'Flottamenedzser'
+  | 'Sportbusz Iroda'
   | 'Rendszeradmin'
   | 'Műszakvezető'
   | 'Járattervező'
@@ -108,6 +111,9 @@ export interface ScheduleStop {
 }
 
 export type TripStatus =
+  | 'Új'
+  | 'Véglegesítésre vár'
+  | 'Véglegesítve'
   | 'Igény beérkezett'
   | 'Tervezés alatt'
   | 'Visszaigazolva'

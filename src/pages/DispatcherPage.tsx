@@ -15,6 +15,9 @@ import {
 } from '@/components/ui/dialog';
 
 const STATUS_COLOR: Record<TripStatus, string> = {
+  'Új':               'bg-blue-100 text-blue-800',
+  'Véglegesítésre vár': 'bg-amber-100 text-amber-800',
+  'Véglegesítve':     'bg-emerald-100 text-emerald-800',
   'Igény beérkezett': 'bg-slate-100 text-slate-700',
   'Tervezés alatt':   'bg-amber-100 text-amber-800',
   'Visszaigazolva':   'bg-blue-100 text-blue-800',

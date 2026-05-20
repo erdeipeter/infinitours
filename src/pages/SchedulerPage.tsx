@@ -270,22 +270,29 @@ function OptimizerPanel({ trip, proposal, onDecision }: {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     let idx = 0;
     const run = () => {
-      if (idx >= steps.length) { setDone(true); return; }
+      if (cancelled) return;
+      const step = steps[idx];
+      if (!step) { setDone(true); return; }
       setCurrentStep(idx);
-      if (steps[idx].id === 's5') setShowRoute(true);
+      if (step.id === 's5') setShowRoute(true);
       timer.current = setTimeout(() => {
-        setDoneSteps(prev => [...prev, steps[idx].id]);
+        if (cancelled) return;
+        setDoneSteps(prev => prev.includes(step.id) ? prev : [...prev, step.id]);
         idx++;
         timer.current = setTimeout(run, 200);
-      }, steps[idx].durationMs);
+      }, step.durationMs);
     };
     timer.current = setTimeout(run, 400);
-    return () => { if (timer.current) clearTimeout(timer.current); };
+    return () => {
+      cancelled = true;
+      if (timer.current) clearTimeout(timer.current);
+    };
   }, []);
 
-  const progress = Math.round((doneSteps.length / steps.length) * 100);
+  const progress = steps.length === 0 ? 100 : Math.round((doneSteps.length / steps.length) * 100);
 
   return (
     <div className="space-y-4">

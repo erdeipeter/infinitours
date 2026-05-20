@@ -27,14 +27,18 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 export default function SchedulesPage() {
   const { currentUser } = useAuth();
+  const { schedules, lines } = useData();
   const [search, setSearch] = useState('');
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [isNewScheduleModalOpen, setIsNewScheduleModalOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  const canCreateSchedule = currentUser?.role === 'Admin' || 
-    currentUser?.role === 'Flottamenedzser' || 
-    currentUser?.role === 'Sportbusz Iroda';
+  const canCreateSchedule =
+    currentUser?.role === 'Admin' ||
+    currentUser?.role === 'Flottamenedzser' ||
+    currentUser?.role === 'Sportbusz Iroda' ||
+    currentUser?.role === 'Rendszeradmin' ||
+    currentUser?.role === 'Műszakvezető' ||
+    currentUser?.role === 'Járattervező';
 
   const getLineName = (lineId: string) => lines.find((l) => l.id === lineId)?.name || '-';
   const getFuelBracket = (bracketId?: string) => fuelBrackets.find((fb) => fb.id === bracketId);

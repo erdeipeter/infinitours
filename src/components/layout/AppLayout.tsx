@@ -57,7 +57,7 @@ const clientNav: NavItem[] = [
   { label: 'Profilom',             icon: User,            path: '/profile' },
 ];
 
-export function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
+export function AppSidebar({ isOpen, onToggle, onClose }: { isOpen: boolean; onToggle: () => void; onClose: () => void }) {
   const location = useLocation();
   const { currentUser, isClient, logout } = useAuth();
   const [expandedItems, setExpandedItems] = useState<string[]>(['Járatok', 'Riportok']);
@@ -111,7 +111,7 @@ export function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: ()
                       <ul className="mt-1 ml-8 space-y-1">
                         {item.children.map(child => (
                           <li key={child.path}>
-                            <NavLink to={child.path} className={({ isActive }) => cn(
+                            <NavLink to={child.path} onClick={onClose} className={({ isActive }) => cn(
                               'block px-3 py-2 rounded-lg text-sm transition-colors',
                               isActive ? 'bg-sidebar-accent text-sidebar-foreground font-medium' : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
                             )}>{child.label}</NavLink>
@@ -121,7 +121,7 @@ export function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: ()
                     )}
                   </div>
                 ) : (
-                  <NavLink to={item.path!} className={({ isActive: a }) => cn('sidebar-link', a && 'sidebar-link-active')}>
+                  <NavLink to={item.path!} onClick={onClose} className={({ isActive: a }) => cn('sidebar-link', a && 'sidebar-link-active')}>
                     <item.icon className="w-5 h-5" />
                     <span>{item.label}</span>
                   </NavLink>
@@ -156,7 +156,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <div className="min-h-screen flex w-full bg-background">
-      <AppSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+      <AppSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <header className="lg:hidden h-16 flex items-center px-4 border-b border-border bg-card">
           <button onClick={() => setSidebarOpen(true)} className="text-foreground"><Menu className="w-6 h-6" /></button>

@@ -35,7 +35,7 @@ interface ScheduleStop {
 }
 
 export function NewScheduleModal({ open, onOpenChange, onScheduleCreated }: NewScheduleModalProps) {
-  const { lines, stops, addSchedule, addStop, addLine } = useData();
+  const { lines, stops, addSchedule, addStop: addStopGlobal, addLine } = useData();
   const [newStopName, setNewStopName] = useState('');
   const [newLineName, setNewLineName] = useState('');
   const [formData, setFormData] = useState({

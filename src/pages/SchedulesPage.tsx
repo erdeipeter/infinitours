@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable, Column } from '@/components/ui/data-table';
-import { schedules, lines, fuelBrackets, stops } from '@/data/mockData';
+import { fuelBrackets, stops } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { Schedule } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

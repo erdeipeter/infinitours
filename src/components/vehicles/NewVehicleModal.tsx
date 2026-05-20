@@ -85,6 +85,7 @@ interface NewVehicleModalProps {
 }
 
 export function NewVehicleModal({ open, onOpenChange, onVehicleCreated }: NewVehicleModalProps) {
+  const { vehicles, addVehicle } = useData();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({

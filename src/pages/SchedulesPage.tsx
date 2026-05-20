@@ -144,7 +144,7 @@ export default function SchedulesPage() {
       <NewScheduleModal
         open={isNewScheduleModalOpen}
         onOpenChange={setIsNewScheduleModalOpen}
-        onScheduleCreated={() => setRefreshKey(prev => prev + 1)}
+        onScheduleCreated={() => {}}
       />
 
       <div className="page-content space-y-4">

@@ -30,12 +30,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 export default function DriversPage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const { drivers } = useData();
   const [search, setSearch] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [isNewDriverModalOpen, setIsNewDriverModalOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  const canCreateDriver = currentUser?.role === 'Admin' || currentUser?.role === 'Flottamenedzser';
+  const canCreateDriver =
+    currentUser?.role === 'Admin' ||
+    currentUser?.role === 'Flottamenedzser' ||
+    currentUser?.role === 'Rendszeradmin' ||
+    currentUser?.role === 'Műszakvezető';
 
   const filteredDrivers = drivers.filter(
     (driver) =>

@@ -31,7 +31,8 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { hu } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { clients, vehicles } from '@/data/mockData';
+import { clients } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 
